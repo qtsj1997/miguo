@@ -1,0 +1,87 @@
+package com.example.a4_22kaoshi;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.JsonReader;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+public class MainActivity extends AppCompatActivity {
+ArrayList<Music> list = new ArrayList<>();
+    AllRoundAdapter allRoundAdapter;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        initData();
+        ititView();
+
+    }
+
+    private void initData() {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url("https://api.apiopen.top/musicRankings").build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String json = response.body().string();
+                paserAudio(json);
+            }
+        });
+
+
+
+    }
+
+    private void paserAudio(String json) {
+        try {
+            JSONObject object = new JSONObject(json);
+            int code = object.getInt("code");
+            if (code==200){
+                JSONArray resule = object.getJSONArray("result");
+                for (int i=0;i<resule.length();i++){
+                    JSONObject object1 = resule.getJSONObject(i);
+                    JSONArray content = object1.getJSONArray("content");
+                    for (int j=0;j<content.length();j++){
+                        JSONObject object2 = content.getJSONObject(j);
+                        String song_id = object2.getString("song_id");
+                        String author = object2.getString("author");
+                        String title  =object2.getString("title");
+                       String pic_uri = object2.getString("pic_small");
+                        Bitmap  bitmap = getBitMap(pic_uri);
+        
